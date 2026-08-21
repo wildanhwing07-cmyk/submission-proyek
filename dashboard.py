@@ -30,10 +30,9 @@ start_date, end_date = st.sidebar.date_input(
 main_df = df[(df["order_purchase_timestamp"] >= pd.to_datetime(start_date)) & 
              (df["order_purchase_timestamp"] <= pd.to_datetime(end_date))]
 
-# --- VISUALISASI GRAFIK 1 (Versi groupby yang stabil) ---
+# --- VISUALISASI GRAFIK 1: TREN ORDER BULANAN ---
 st.subheader("Tren Jumlah Order per Bulan")
 
-# Menggunakan groupby agar tidak error di Pandas versi baru
 main_df["order_month"] = main_df["order_purchase_timestamp"].dt.to_period("M").dt.to_timestamp()
 monthly_orders_df = main_df.groupby("order_month").agg({
     "order_id": "nunique"
@@ -47,14 +46,27 @@ ax.set_title("Jumlah Order per Bulan", fontsize=16)
 plt.xticks(rotation=45)
 st.pyplot(fig)
 
-# --- VISUALISASI GRAFIK 2 ---
+
+# --- VISUALISASI GRAFIK 2: TOP KATEGORI PRODUK (DENGAN PENGAMAN) ---
 st.subheader("Top 5 Kategori Produk")
-sum_order_items_df = main_df.groupby("product_category_name_english")["order_id"].count().reset_index()
-sum_order_items_df.rename(columns={"order_id": "product_count"}, inplace=True)
+
+# Mencari kolom kategori yang tersedia di data secara otomatis agar tidak KeyError
+if "product_category_name_english" in main_df.columns:
+    cat_column = "product_category_name_english"
+elif "product_category_name" in main_df.columns:
+    cat_column = "product_category_name"
+else:
+    cat_column = main_df.columns[0]
+
+sum_order_items_df = main_df.groupby(cat_column)["order_id"].count().reset_index()
+sum_order_items_df.rename(columns={"order_id": "product_count", cat_column: "category"}, inplace=True)
 top_products = sum_order_items_df.sort_values(by="product_count", ascending=False).head(5)
 
 fig, ax = plt.subplots(figsize=(10, 5))
-sns.barplot(x="product_count", y="product_category_name_english", data=top_products, palette="Blues_r", ax=ax)
+sns.barplot(x="product_count", y="category", data=top_products, palette="Blues_r", ax=ax)
+ax.set_title("Top 5 Kategori Produk", fontsize=16)
+ax.set_xlabel("Jumlah Terjual", fontsize=12)
+ax.set_ylabel("Kategori", fontsize=12)
 st.pyplot(fig)
 
 st.caption("Copyright © Dicoding Proyek Analisis Data 2026")
