@@ -31,7 +31,7 @@ main_df = df[(df["order_purchase_timestamp"] >= pd.to_datetime(start_date)) &
              (df["order_purchase_timestamp"] <= pd.to_datetime(end_date))]
 
 # --- VISUALISASI GRAFIK 1: TREN ORDER BULANAN ---
-st.subheader("Tren Jumlah Order per Bulan")
+st.subheader("Tren Jumlah Order per Bulan (2016 - 2018)")
 
 main_df["order_month"] = main_df["order_purchase_timestamp"].dt.to_period("M").dt.to_timestamp()
 monthly_orders_df = main_df.groupby("order_month").agg({
@@ -47,10 +47,9 @@ plt.xticks(rotation=45)
 st.pyplot(fig)
 
 
-# --- VISUALISASI GRAFIK 2: TOP KATEGORI PRODUK (DENGAN PENGAMAN) ---
-st.subheader("Top 5 Kategori Produk")
+# --- VISUALISASI GRAFIK 2: TOP KATEGORI PRODUK (DENGAN HIGHLIGHT WARNA) ---
+st.subheader("Top 5 Kategori Produk dengan Penjualan Tertinggi")
 
-# Mencari kolom kategori yang tersedia di data secara otomatis agar tidak KeyError
 if "product_category_name_english" in main_df.columns:
     cat_column = "product_category_name_english"
 elif "product_category_name" in main_df.columns:
@@ -63,7 +62,11 @@ sum_order_items_df.rename(columns={"order_id": "product_count", cat_column: "cat
 top_products = sum_order_items_df.sort_values(by="product_count", ascending=False).head(5)
 
 fig, ax = plt.subplots(figsize=(10, 5))
-sns.barplot(x="product_count", y="category", data=top_products, palette="Blues_r", ax=ax)
+
+# Membuat warna seragam, lalu menyoroti bar pertama (tertinggi) dengan warna berbeda
+colors = ["#72BCD4" if i > 0 else "#2C5282" for i in range(len(top_products))]
+
+sns.barplot(x="product_count", y="category", data=top_products, palette=colors, ax=ax)
 ax.set_title("Top 5 Kategori Produk", fontsize=16)
 ax.set_xlabel("Jumlah Terjual", fontsize=12)
 ax.set_ylabel("Kategori", fontsize=12)
