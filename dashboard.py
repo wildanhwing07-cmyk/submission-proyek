@@ -12,23 +12,26 @@ st.set_page_config(
 )
 
 # ==========================================
-# 1. LOAD DATA 
+# 1. LOAD DATA & CLEANING
 # ==========================================
 @st.cache_data
 def load_data():
     df = pd.read_csv("all_data.csv")
+    
+    # Menghapus baris jika ada data penting yang kosong (NaN)
+    df = df.dropna(subset=["order_purchase_timestamp", "product_category_name", "price", "customer_id"])
+    
+    # Mengubah kolom waktu menjadi datetime
+    datetime_columns = ["order_purchase_timestamp", "order_delivered_customer_date"]
+    for col in datetime_columns:
+        if col in df.columns:
+            df[col] = pd.to_datetime(df[col], errors='coerce')
+            
+    df = df.sort_values(by="order_purchase_timestamp")
+    df = df.reset_index(drop=True)
     return df
 
 all_df = load_data()
-
-# Mengubah kolom waktu menjadi datetime
-datetime_columns = ["order_purchase_timestamp", "order_delivered_customer_date"]
-for col in datetime_columns:
-    if col in all_df.columns:
-        all_df[col] = pd.to_datetime(all_df[col])
-
-all_df = all_df.sort_values(by="order_purchase_timestamp")
-all_df = all_df.reset_index(drop=True)
 
 # ==========================================
 # 2. FILTER TANGGAL INTERAKTIF DI SIDEBAR
