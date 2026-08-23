@@ -12,14 +12,11 @@ st.set_page_config(
 )
 
 # ==========================================
-# 1. LOAD DATA DENGAN KODE PENGAMAN
+# 1. LOAD DATA (Hanya membaca CSV biasa)
 # ==========================================
 @st.cache_data
 def load_data():
-    try:
-        df = pd.read_csv("all_data.csv.gz")
-    except FileNotFoundError:
-        df = pd.read_csv("all_data.csv")
+    df = pd.read_csv("all_data.csv")
     return df
 
 all_df = load_data()
