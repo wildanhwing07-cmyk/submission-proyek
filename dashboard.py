@@ -12,7 +12,7 @@ st.set_page_config(
 )
 
 # ==========================================
-# 1. LOAD DATA (Hanya membaca CSV biasa)
+# 1. LOAD DATA 
 # ==========================================
 @st.cache_data
 def load_data():
